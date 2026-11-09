@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연명부 관리 페이지</title>
+<style>
+:root{--navy:#172b4d;--blue:#285b9a;--pale:#eef3f8;--line:#dce3eb;--text:#243247;--muted:#718096;--white:#fff;--green:#23845b;--red:#bd4545}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f8;color:var(--text);font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px}
+header{height:68px;background:var(--navy);color:white;display:flex;align-items:center;justify-content:space-between;padding:0 34px;box-shadow:0 2px 8px #10213a22}
+.brand{font-size:20px;font-weight:750;letter-spacing:-.5px}.brand small{font-size:11px;color:#b9c9dc;margin-left:12px;font-weight:400}
+.header-right{display:flex;align-items:center;gap:12px;font-size:12px;color:#d5dfeb}
+main{max-width:1380px;margin:30px auto;padding:0 28px}
+.search-panel,.panel,.detail-card,.intro{background:white;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 8px #172b4d08}
+.search-panel{padding:24px 28px;margin-bottom:22px}
+.search-label{font-size:13px;font-weight:700;color:#506078;margin-bottom:10px}
+.search-row{display:flex;gap:10px}
+.search-row input{height:48px;flex:1;border:1px solid #cbd5e1;border-radius:7px;padding:0 16px;font-size:16px;outline:none}
+.search-row input:focus,.field input:focus,.field textarea:focus,.field select:focus{border-color:#5d88bc;box-shadow:0 0 0 3px #285b9a14}
+.hint{font-size:11px;color:#8a96a6;margin-top:9px}
+button{border:0;border-radius:6px;padding:10px 16px;font-size:13px;font-weight:650;cursor:pointer;transition:.15s}
+button:hover{filter:brightness(.96)}.primary{background:var(--blue);color:white}.secondary{background:#eaf0f6;color:#35516f}.outline{background:white;border:1px solid #cbd5e1;color:#52647a}.danger{background:#fff0f0;color:var(--red);border:1px solid #f0cccc}.small{padding:7px 11px;font-size:12px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}
+.section-title{font-size:16px;font-weight:750}.mode{display:flex;gap:8px;align-items:center}
+.mode-label{font-size:12px;color:var(--green);font-weight:700;background:#e8f5ee;padding:6px 10px;border-radius:20px}
+.results{display:grid;gap:10px}.result-item{background:white;border:1px solid var(--line);border-radius:8px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.result-item:hover{border-color:#8da9c9;background:#fbfdff}.person-name{font-size:15px;font-weight:750}.meta{font-size:12px;color:var(--muted);margin-top:5px}.arrow{color:#8b9aad;font-size:20px}
+.empty{padding:48px;text-align:center;color:#8592a3;background:white;border:1px dashed #ccd5df;border-radius:8px}
+.detail-card{padding:25px 28px;margin-top:14px}.detail-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.detail-top h2{font-size:19px;margin:0}.detail-grid{display:grid;grid-template-columns:320px 1fr;gap:32px}
+.left-col{border-right:1px solid var(--line);padding-right:28px}.photo{width:160px;height:178px;background:#f1f4f7;border:1px solid #dce3eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9aa6b4;font-size:13px;margin:0 auto 20px;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover}.basic-list{display:grid;grid-template-columns:90px 1fr;gap:13px 10px;font-size:13px}.basic-list dt{color:#8290a1}.basic-list dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.extra-box{border:1px solid var(--line);border-radius:7px;min-height:125px;overflow:hidden}.extra-box h3{margin:0;padding:10px 13px;background:#f7f9fb;border-bottom:1px solid var(--line);font-size:12px;color:#53647a}.extra-box p{margin:0;padding:13px;white-space:pre-wrap;line-height:1.65;color:#43536a;min-height:75px}
+.admin-panel{margin-top:28px}.panel{padding:22px 24px}.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.panel-head h2{font-size:16px;margin:0}
+table{width:100%;border-collapse:collapse;background:white}th,td{text-align:left;padding:12px 14px;border-bottom:1px solid #e8edf2;font-size:12px}th{background:#f5f7fa;color:#66758a;font-weight:700}tbody tr:hover{background:#f9fbfd}.table-name{font-weight:700;color:#2c4e76;cursor:pointer}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-form{margin-top:20px}.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 18px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:#637187;font-weight:650}.field input,.field textarea,.field select{width:100%;border:1px solid #ccd5df;border-radius:6px;padding:10px 11px;font:inherit;outline:none;background:white}.field textarea{resize:vertical;min-height:88px}.field.wide{grid-column:span 3}.field.half{grid-column:span 1}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.notice{padding:12px 15px;border-radius:7px;background:#f1f6fb;color:#59718d;font-size:12px;line-height:1.6;margin-bottom:18px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#26384f;color:white;padding:12px 18px;border-radius:7px;box-shadow:0 5px 20px #0002;z-index:20;font-size:13px;display:none}
+.modal-backdrop{position:fixed;inset:0;background:#14223888;display:flex;align-items:center;justify-content:center;z-index:30;padding:20px}
+.modal{width:min(480px,100%);background:white;border-radius:12px;padding:28px;box-shadow:0 15px 50px #0003}.modal h2{margin:0 0 14px;font-size:20px}.modal p,.modal li{font-size:13px;line-height:1.75;color:#5e6d80}.modal ul{padding-left:20px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
+.hidden{display:none!important}.muted{color:var(--muted)}.subtle{font-size:11px;color:#8996a6}
+@media(max-width:850px){main{padding:0 14px;margin:18px auto}.detail-grid{grid-template-columns:1fr}.left-col{border-right:0;border-bottom:1px solid var(--line);padding:0 0 22px}.extra-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:repeat(2,1fr)}.field.wide{grid-column:span 2}header{padding:0 16px}.brand small{display:none}.table-wrap{overflow-x:auto}}
+</style>
+</head>
+<body>
+<header><div class="brand">연명부 관리 <small>MEMBER DIRECTORY</small></div><div class="header-right"><span>조직 구성원 정보 시스템</span><span id="headerMode">일반 조회 모드</span></div></header>
+<main>
+<section class="search-panel">
+ <div class="search-label">구성원 이름 검색</div>
+ <div class="search-row"><input id="searchInput" type="text" placeholder="검색할 이름을 입력하세요" autocomplete="off"><button id="clearSearch" class="outline">초기화</button></div>
+ <div class="hint">이름 일부를 입력하면 실시간으로 검색됩니다. 관리자 모드 전환은 검색창에 비밀번호 <b>1234</b>를 입력하세요.</div>
+</section>
+<div class="toolbar"><div class="section-title" id="resultHeading">검색 결과</div><div class="mode"><span id="adminBadge" class="mode-label hidden">관리자 모드</span><button id="exitAdmin" class="outline small hidden">관리자 모드 종료</button></div></div>
+<section id="results" class="results"><div class="empty">검색창에 구성원의 이름을 입력해 주세요.</div></section>
+<section id="detailArea"></section>
+<section id="adminArea" class="admin-panel hidden">
+ <div class="panel">
+  <div class="panel-head"><h2>전체 인물 관리</h2><div class="admin-actions"><button id="newPerson" class="primary small">＋ 새 인물 등록</button><button id="exportJson" class="secondary small">JSON 내보내기</button><button id="importJson" class="secondary small">JSON 불러오기</button><input id="fileInput" type="file" accept=".json,application/json" class="hidden"></div></div>
+  <div class="notice">등록·수정 내용은 이 브라우저에 자동 저장됩니다. JSON 파일로 백업하거나 다른 브라우저에서 불러올 수 있습니다. 예시 데이터는 모두 가상 인물입니다.</div>
+  <div class="table-wrap"><table><thead><tr><th>이름</th><th>전화번호</th><th>소속</th><th>직책</th></tr></thead><tbody id="peopleTable"></tbody></table></div>
+ </div>
+ <div id="formPanel" class="panel admin-form hidden">
+  <div class="panel-head"><h2 id="formTitle">새 인물 등록</h2><span class="subtle">입력 내용은 변경 즉시 자동 저장됩니다.</span></div>
+  <div class="form-grid" id="personForm">
+   <div class="field"><label for="fName">이름 *</label><input id="fName" data-key="name" required></div>
+   <div class="field"><label for="fPhone">전화번호 *</label><input id="fPhone" data-key="phone" placeholder="010-1234-5678"></div>
+   <div class="field"><label for="fBirth">생년월일 (6자리)</label><input id="fBirth" data-key="birth" maxlength="6" placeholder="예: 990315"></div>
+   <div class="field"><label for="fCompany">소속</label><input id="fCompany" data-key="company"></div>
+   <div class="field"><label for="fDept">부서</label><select id="fDept" data-key="department"><option>인사팀</option><option>총무팀</option><option>회계팀</option><option>개발팀</option><option>영업팀</option></select></div>
+   <div class="field"><label for="fPosition">직책</label><input id="fPosition" data-key="position" placeholder="예: 개발 담당"></div>
+   <div class="field"><label for="fRank">직급</label><select id="fRank" data-key="rank"><option>사원</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>임원</option></select></div>
+   <div class="field"><label for="fPhoto">얼굴 사진</label><input id="fPhoto" type="file" accept="image/*"></div>
+   <div class="field"><label>사진 관리</label><button id="removePhoto" type="button" class="outline small">사진 제거</button></div>
+   <div class="field"><label for="fHistory">업무 이력</label><textarea id="fHistory" data-key="history"></textarea></div>
+   <div class="field"><label for="fPersonality">성격</label><textarea id="fPersonality" data-key="personality"></textarea></div>
+   <div class="field"><label for="fLanguages">사용 가능 프로그래밍 언어</label><textarea id="fLanguages" data-key="languages"></textarea></div>
+   <div class="field wide"><label for="fNotes">기타 특이사항</label><textarea id="fNotes" data-key="notes"></textarea></div>
+  </div>
+  <div class="form-actions"><button id="cancelEdit" class="outline">취소</button><button id="finishEdit" class="primary">수정 완료</button></div>
+ </div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+<div id="modalRoot"></div>
+<script>
+const STORAGE_KEY='member_directory_v1';
+const companies=['한빛테크','세움산업','다온솔루션','미래파트너스','가온시스템'];
+const firstNames=['김','이','박','최','정','강','조','윤','장','임','한','오','서','신','권','황','안','송','전','홍'];
+const givenNames=['민준','서연','도윤','지우','예준','하윤','주원','서윤','지호','지민','현우','수빈','준서','채원','시우','유진','건우','다은','민서','태윤','은우','소율','정우','나연','승현','예린','재윤','아린','성민','하은','준혁','수아','동현','유나','현서','민재','서진','우진','다현','지안','태민','소연','재원','윤서','시윤','가은','진우','채은','성준','예은'];
+const ranks=['사원','사원','사원','사원','대리','대리','대리','과장','차장','부장'];
+const departments=['인사팀','총무팀','회계팀','개발팀','영업팀'];
+const jobTitles={'인사팀':'인사 담당','총무팀':'총무 담당','회계팀':'회계 담당','개발팀':'소프트웨어 개발','영업팀':'영업 담당'};
+function makeSeed(){let arr=[];for(let c=0;c<5;c++){for(let j=0;j<10;j++){let i=c*10+j,dept=departments[j%5],rank=ranks[j],n=firstNames[(i*3+2)%firstNames.length]+givenNames[(i*7+4)%givenNames.length];arr.push({id:'p'+(i+1),name:n,phone:`010-${String(2100+i*17).slice(-4)}-${String(4300+i*29).slice(-4)}`,birth:String(800101+i*317).slice(-6),company:companies[c],department:dept,position:jobTitles[dept],rank,history:i%4===0?'2022년 입사\n사내 업무 프로세스 개선 프로젝트 참여':'',personality:i%7===0?'차분하고 꼼꼼하며 협업을 중시함':'',languages:dept==='개발팀'&&i%2===0?'JavaScript, Python':'',notes:i%9===0?'신규 프로젝트 경험 있음':'',photo:''});}}return arr}
+let people=loadData(),isAdmin=false,currentId=null,editingId=null,formIsNew=false,photoDraft='',undoTimer=null,undoPerson=null,toastTimer=null;
+function loadData(){try{let d=JSON.parse(localStorage.getItem(STORAGE_KEY));if(Array.isArray(d)&&d.length)return d}catch(e){}return makeSeed()}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(people))}catch(e){showToast('저장 공간이 부족합니다. 사진 크기를 줄이거나 백업을 확인해 주세요.');}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showToast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.display='none',2600)}
+function sortPeople(a){return [...a].sort((x,y)=>(x.company||'').localeCompare(y.company||'','ko')||(x.department||'').localeCompare(y.department||'','ko')||(x.name||'').localeCompare(y.name||'','ko'))}
+function setAdmin(on){isAdmin=on;document.getElementById('adminArea').classList.toggle('hidden',!on);document.getElementById('adminBadge').classList.toggle('hidden',!on);document.getElementById('exitAdmin').classList.toggle('hidden',!on);document.getElementById('headerMode').textContent=on?'관리자 모드':'일반 조회 모드';if(on){renderTable();showToast('관리자 모드로 전환되었습니다.')}else{closeForm();showToast('일반 조회 모드로 돌아왔습니다.')}}
+function renderSearch(){let q=document.getElementById('searchInput').value.trim(),results=document.getElementById('results'),heading=document.getElementById('resultHeading');if(q==='1234'){document.getElementById('searchInput').value='';setAdmin(true);return}if(!q){heading.textContent='검색 결과';results.innerHTML='<div class="empty">검색창에 구성원의 이름을 입력해 주세요.</div>';document.getElementById('detailArea').innerHTML='';currentId=null;return}let found=sortPeople(people.filter(p=>(p.name||'').toLowerCase().includes(q.toLowerCase())));heading.textContent=`검색 결과 ${found.length}명`;document.getElementById('detailArea').innerHTML='';currentId=null;if(!found.length){results.innerHTML='<div class="empty">검색 결과가 없습니다.</div>';return}if(found.length===1){results.innerHTML='';renderDetail(found[0].id);return}results.innerHTML=found.map(p=>`<div class="result-item" data-id="${esc(p.id)}"><div><div class="person-name">${esc(p.name)}</div><div class="meta">${esc(p.company)} · ${esc(p.department)} · ${esc(p.position)} · ${esc(p.rank)}</div></div><span class="arrow">›</span></div>`).join('');results.querySelectorAll('.result-item').forEach(el=>el.addEventListener('click',()=>renderDetail(el.dataset.id)))}
+function renderDetail(id){let p=people.find(x=>x.id===id);if(!p)return;currentId=id;document.getElementById('results').innerHTML='';let photo=p.photo?`<img src="${p.photo}" alt="얼굴 사진">`:'사진 없음';document.getElementById('detailArea').innerHTML=`<div class="detail-card"><div class="detail-top"><h2>${esc(p.name)} <span class="subtle">구성원 상세 정보</span></h2>${isAdmin?`<div class="admin-actions"><button class="secondary small" id="editPerson">수정</button><button class="danger small" id="deletePerson">삭제</button></div>`:''}</div><div class="detail-grid"><div class="left-col"><div class="photo">${photo}</div><dl class="basic-list"><dt>이름</dt><dd>${esc(p.name)}</dd><dt>전화번호</dt><dd>${esc(p.phone)}</dd><dt>생년월일</dt><dd>${esc(p.birth)}</dd><dt>소속</dt><dd>${esc(p.company)}</dd><dt>부서</dt><dd>${esc(p.department)}</dd><dt>직책</dt><dd>${esc(p.position)}</dd><dt>직급</dt><dd>${esc(p.rank)}</dd></dl></div><div class="extra-grid">${[['업무 이력',p.history],['성격',p.personality],['사용 가능 프로그래밍 언어',p.languages],['기타 특이사항',p.notes]].map(([h,v])=>`<section class="extra-box"><h3>${h}</h3><p>${esc(v||'등록된 내용이 없습니다.')}</p></section>`).join('')}</div></div></div>`;if(isAdmin){document.getElementById('editPerson').onclick=()=>openForm(id);document.getElementById('deletePerson').onclick=()=>deletePerson(id)}}
+function renderTable(){let body=document.getElementById('peopleTable');body.innerHTML=sortPeople(people).map(p=>`<tr><td class="table-name" data-id="${esc(p.id)}">${esc(p.name)}</td><td>${esc(p.phone)}</td><td>${esc(p.company)}</td><td>${esc(p.position)}</td></tr>`).join('');body.querySelectorAll('.table-name').forEach(el=>el.onclick=()=>{document.getElementById('searchInput').value=people.find(p=>p.id===el.dataset.id)?.name||'';renderDetail(el.dataset.id);document.getElementById('detailArea').scrollIntoView({behavior:'smooth',block:'start'})})}
+const fields=['name','phone','birth','company','department','position','rank','history','personality','languages','notes'];
+function openForm(id=null){editingId=id;formIsNew=!id;let p=id?people.find(x=>x.id===id):{name:'',phone:'',birth:'',company:'',department:'인사팀',position:'',rank:'사원',history:'',personality:'',languages:'',notes:'',photo:''};photoDraft=p.photo||'';document.getElementById('formTitle').textContent=id?'인물 정보 수정':'새 인물 등록';fields.forEach(k=>{let el=document.querySelector(`[data-key="${k}"]`);el.value=p[k]||''});document.getElementById('fPhoto').value='';document.getElementById('formPanel').classList.remove('hidden');document.getElementById('formPanel').scrollIntoView({behavior:'smooth',block:'start'})}
+function closeForm(){document.getElementById('formPanel').classList.add('hidden');editingId=null;formIsNew=false;photoDraft=''}
+function formValues(){let o={};fields.forEach(k=>o[k]=document.querySelector(`[data-key="${k}"]`).value.trim());o.photo=photoDraft;return o}
+function saveFormChange(){if(!editingId)return;let values=formValues(),idx=people.findIndex(p=>p.id===editingId);if(idx<0)return;let duplicate=people.some(p=>p.id!==editingId&&p.name===values.name&&p.phone===values.phone);if(duplicate){showToast('이름과 전화번호가 모두 같은 인물이 이미 있습니다.');return}people[idx]={...people[idx],...values};save();renderTable();if(currentId===editingId)renderDetail(editingId)}
+document.querySelectorAll('[data-key]').forEach(el=>el.addEventListener('input',()=>{if(formIsNew){let vals=formValues();if(vals.name&&vals.phone){if(people.some(p=>p.name===vals.name&&p.phone===vals.phone)){showToast('동일한 이름과 전화번호는 중복 등록할 수 없습니다.');return}if(!editingId){editingId='new_'+Date.now();people.push({id:editingId,...vals});save();renderTable() }else{let idx=people.findIndex(p=>p.id===editingId);if(idx>=0)people[idx]={...people[idx],...vals};save();renderTable()}}else if(editingId){let idx=people.findIndex(p=>p.id===editingId);if(idx>=0){people[idx]={...people[idx],...vals};save();renderTable()}}}else saveFormChange()}));
+document.getElementById('fPhoto').addEventListener('change',e=>{let file=e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){showToast('이미지 파일만 등록할 수 있습니다.');return}let reader=new FileReader();reader.onload=()=>{photoDraft=reader.result;if(editingId){let i=people.findIndex(p=>p.id===editingId);if(i>=0){people[i].photo=photoDraft;save();renderTable()}}};reader.readAsDataURL(file)});
+document.getElementById('removePhoto').onclick=()=>{photoDraft='';document.getElementById('fPhoto').value='';if(editingId){let i=people.findIndex(p=>p.id===editingId);if(i>=0){people[i].photo='';save();renderTable()}}};
+document.getElementById('newPerson').onclick=()=>openForm();
+document.getElementById('finishEdit').onclick=()=>{if(formIsNew&&!editingId){let v=formValues();if(!v.name||!v.phone){showToast('이름과 전화번호를 입력해 주세요.');return}if(people.some(p=>p.name===v.name&&p.phone===v.phone)){showToast('동일한 이름과 전화번호는 중복 등록할 수 없습니다.');return}editingId='p'+Date.now();people.push({id:editingId,...v});save()}else if(formIsNew&&editingId){let idx=people.findIndex(p=>p.id===editingId);if(idx>=0){let v=formValues();if(!v.name||!v.phone){showToast('이름과 전화번호를 입력해 주세요.');return}if(people.some(p=>p.id!==editingId&&p.name===v.name&&p.phone===v.phone)){showToast('동일한 이름과 전화번호는 중복 등록할 수 없습니다.');return}people[idx]={...people[idx],...v};save()}}else{saveFormChange()}let id=editingId;closeForm();renderTable();if(id&&people.some(p=>p.id===id)){document.getElementById('searchInput').value=people.find(p=>p.id===id).name;renderDetail(id)}showToast('저장되었습니다.')};
+document.getElementById('cancelEdit').onclick=()=>{if(formIsNew&&editingId){people=people.filter(p=>p.id!==editingId);save();renderTable()}closeForm()};
+function deletePerson(id){let p=people.find(x=>x.id===id);if(!p||!confirm(`${p.name} 구성원을 삭제하시겠습니까?`))return;undoPerson={...p};people=people.filter(x=>x.id!==id);save();renderTable();document.getElementById('detailArea').innerHTML='';currentId=null;showToast('삭제되었습니다. 10초 이내에 되돌릴 수 있습니다.');let t=document.getElementById('toast');let b=document.createElement('button');b.textContent='되돌리기';b.className='small';b.style.marginLeft='12px';b.onclick=()=>{if(undoPerson){people.push(undoPerson);save();renderTable();undoPerson=null;showToast('삭제를 되돌렸습니다.')}};t.appendChild(b);clearTimeout(undoTimer);undoTimer=setTimeout(()=>{undoPerson=null;t.style.display='none'},10000)}
+document.getElementById('searchInput').addEventListener('input',renderSearch);
+document.getElementById('clearSearch').onclick=()=>{document.getElementById('searchInput').value='';renderSearch()};
+document.getElementById('exitAdmin').onclick=()=>setAdmin(false);
+document.getElementById('exportJson').onclick=()=>{let blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),people},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='연명부_백업_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);showToast('JSON 백업 파일을 내보냈습니다.')};
+document.getElementById('importJson').onclick=()=>document.getElementById('fileInput').click();
+document.getElementById('fileInput').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let data=JSON.parse(r.result),incoming=Array.isArray(data)?data:data.people;if(!Array.isArray(incoming))throw Error();let mode=prompt('불러오기 방식을 선택하세요.\n1: 기존 데이터 전체 교체\n2: 기존 데이터와 합치기','2');if(mode!=='1'&&mode!=='2')return;let clean=incoming.filter(p=>p&&p.name&&p.phone).map((p,i)=>({...p,id:String(p.id||('import_'+Date.now()+'_'+i))}));if(mode==='1')people=clean;else{let merged=[...people];clean.forEach(p=>{let ix=merged.findIndex(x=>x.name===p.name&&x.phone===p.phone);if(ix>=0)merged[ix]={...merged[ix],...p};else merged.push(p)});people=merged}save();renderTable();renderSearch();showToast('JSON 데이터를 불러왔습니다.')}catch(err){alert('올바른 연명부 JSON 파일이 아닙니다.')}};r.readAsText(f);e.target.value=''});
+function showWelcome(){if(sessionStorage.getItem('directory_welcome_seen'))return;document.getElementById('modalRoot').innerHTML=`<div class="modal-backdrop"><div class="modal"><h2>연명부 관리 페이지 안내</h2><p>조직 구성원의 기본 정보와 업무 관련 정보를 조회할 수 있는 예시용 페이지입니다.</p><ul><li>검색창에 이름을 입력하면 실시간으로 검색됩니다.</li><li>검색 결과가 한 명이면 상세 정보가 바로 표시되고, 여러 명이면 목록에서 선택할 수 있습니다.</li><li>관리자 모드는 검색창에 <b>1234</b>를 입력해 진입합니다.</li><li>관리자 모드에서는 인물 등록·수정·삭제, 사진 등록, JSON 백업을 할 수 있습니다.</li></ul><p class="subtle">초기 등록된 50명은 모두 가상의 예시 인물입니다. 실제 개인정보를 입력하거나 보안 목적으로 사용하지 마세요.</p><div class="modal-actions"><button id="welcomeOk" class="primary">확인</button></div></div></div>`;document.getElementById('welcomeOk').onclick=()=>{sessionStorage.setItem('directory_welcome_seen','1');document.getElementById('modalRoot').innerHTML=''}}
+showWelcome();renderSearch();
+</script>
+</body>
+</html>
