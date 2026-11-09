@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기업 통합 연명부 관리 시스템</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --primary-color: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #475569;
+            --accent-color: #2563eb;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --danger-color: #dc2626;
+            --success-color: #16a34a;
+            --warning-color: #d97706;
+            --admin-bg: #f8fafc;
+            --admin-border: #cbd5e1;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Navigation */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .header-title i {
+            font-size: 1.5rem;
+            color: #93c5fd;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mode-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .mode-badge.viewer {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #e0f2fe;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .mode-badge.admin {
+            background-color: #fef08a;
+            color: #854d0e;
+            border: 1px solid #fde047;
+        }
+
+        /* App Container */
+        .app-container {
+            max-width: 1280px;
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Search Section */
+        .search-section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .search-box-wrapper i.search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 3rem;
+            font-size: 1.05rem;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.2s ease;
+            background-color: #f8fafc;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .admin-hint {
+            margin-top: 0.6rem;
+            font-size: 0.825rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .admin-hint code {
+            background-color: #e2e8f0;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Action Toolbar (Admin Mode) */
+        .admin-toolbar {
+            display: none;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .admin-toolbar.active {
+            display: flex;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.55rem 1.1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+
+        /* Guide Card (Initial State) */
+        .guide-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .guide-icon {
+            width: 64px;
+            height: 64px;
+            background-color: #dbeafe;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1.25rem;
+        }
+
+        .guide-card h2 {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .guide-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            max-width: 650px;
+            margin: 0 auto 1.5rem;
+            line-height: 1.6;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .guide-item {
+            background-color: #f8fafc;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .guide-item h4 {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .guide-item p {
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        /* Detail View (Horizontal Layout) */
+        .detail-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-header {
+            background-color: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-header-title {
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .detail-body {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 480px;
+        }
+
+        @media (max-width: 900px) {
+            .detail-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Side: Profile & Basic Info */
+        .detail-left {
+            background-color: #f8fafc;
+            border-right: 1px solid var(--border-color);
+            padding: 1.75rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .photo-container {
+            width: 170px;
+            height: 200px;
+            border-radius: 10px;
+            background-color: #e2e8f0;
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .photo-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+
+        .photo-placeholder span {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .photo-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: none;
+            background-color: rgba(15, 23, 42, 0.85);
+        }
+
+        .photo-container.editable .photo-controls {
+            display: flex;
+        }
+
+        .photo-upload-btn, .photo-delete-btn {
+            flex: 1;
+            color: white;
+            text-align: center;
+            padding: 0.45rem 0;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            transition: background-color 0.2s;
+        }
+
+        .photo-upload-btn:hover {
+            background-color: rgba(37, 99, 235, 0.8);
+        }
+
+        .photo-delete-btn {
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .photo-delete-btn:hover {
+            background-color: rgba(220, 38, 38, 0.8);
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .info-table th {
+            text-align: left;
+            padding: 0.55rem 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            width: 32%;
+            vertical-align: middle;
+        }
+
+        .info-table td {
+            padding: 0.55rem 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            vertical-align: middle;
+        }
+
+        .info-table input, .info-table select {
+            width: 100%;
+            padding: 0.4rem 0.6rem;
+            border: 1px solid var(--admin-border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background-color: #ffffff;
+        }
+
+        .info-table input:focus, .info-table select:focus {
+            outline: 2px solid var(--accent-color);
+        }
+
+        /* Right Side: Additional Details */
+        .detail-right {
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            background-color: #ffffff;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .field-content {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            min-height: 70px;
+            font-size: 0.925rem;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .field-content.empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        textarea.field-input {
+            width: 100%;
+            min-height: 75px;
+            padding: 0.75rem;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: 0.925rem;
+            resize: vertical;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        textarea.field-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Results List View (Multiple Search Results) */
+        .results-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .results-header {
+            background-color: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .results-header strong {
+            color: var(--primary-color);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            padding: 1.25rem;
+        }
+
+        .person-item-card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .person-item-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            background-color: #f8fafc;
+        }
+
+        .person-avatar {
+            width: 50px;
+            height: 60px;
+            border-radius: 6px;
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .person-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .person-avatar i {
+            font-size: 1.5rem;
+            color: #94a3b8;
+        }
+
+        .person-info-summary {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .person-name-title {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .person-name-title .name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .person-name-title .pos {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .person-org {
+            font-size: 0.825rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .person-contact {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Empty State */
+        .no-results {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        /* Admin Table View */
+        .admin-table-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+
+        .table-header {
+            background-color: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .admin-table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .admin-table th {
+            position: sticky;
+            top: 0;
+            background-color: #f1f5f9;
+            color: var(--secondary-color);
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            z-index: 5;
+        }
+
+        .admin-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .admin-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        /* Toast Notifications / Undo Banner */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            background-color: #0f172a;
+            color: white;
+            padding: 0.85rem 1.25rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.undo-toast {
+            background-color: #1e293b;
+            border: 1px solid #475569;
+        }
+
+        .btn-undo {
+            background-color: #f59e0b;
+            color: #0f172a;
+            border: none;
+            padding: 0.25rem 0.65rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-undo:hover {
+            background-color: #d97706;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Modal Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background-color: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .radio-option:hover {
+            background-color: #f8fafc;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* Auto-save indicator */
+        .autosave-indicator {
+            font-size: 0.8rem;
+            color: var(--success-color);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .autosave-indicator.visible {
+            opacity: 1;
+        }
+
+        /* Hidden Utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Save Badge */
+        .save-badge {
+            font-size: 0.75rem;
+            background-color: #dcfce7;
+            color: #15803d;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-title">
+            <i class="fa-solid fa-address-book"></i>
+            <span>기업 통합 연명부 관리 시스템</span>
+        </div>
+        <div class="header-status">
+            <div id="modeBadge" class="mode-badge viewer">
+                <i class="fa-solid fa-eye"></i> 일반 조회 모드
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-box-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="성함을 입력하세요 (예: 김민준, 이서연)..." autocomplete="off">
+            </div>
+            <div class="admin-hint">
+                <i class="fa-solid fa-circle-info"></i> 관리자 모드 진입: 검색창에 <code>1234</code> 입력 후 검색
+            </div>
+        </div>
+
+        <!-- Admin Toolbar -->
+        <div id="adminToolbar" class="admin-toolbar">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="openNewPersonForm()">
+                    <i class="fa-solid fa-user-plus"></i> 새 인물 등록
+                </button>
+                <button class="btn btn-outline" onclick="exportJSON()">
+                    <i class="fa-solid fa-file-export"></i> JSON 내보내기
+                </button>
+                <button class="btn btn-outline" onclick="triggerImportJSON()">
+                    <i class="fa-solid fa-file-import"></i> JSON 불러오기
+                </button>
+                <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="handleJSONFileSelect(event)">
+            </div>
+            <button class="btn btn-secondary" onclick="exitAdminMode()">
+                <i class="fa-solid fa-right-from-bracket"></i> 관리자 모드 종료
+            </button>
+        </div>
+
+        <!-- Main Display Content Area -->
+        <div id="contentArea">
+            <!-- Initial Guide View -->
+            <div id="guideCard" class="guide-card">
+                <div class="guide-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h2>임직원 연명부 시스템에 오신 것을 환영합니다</h2>
+                <p>상단 검색창에 구성원의 이름을 입력하여 전화번호, 부서, 업무 이력, 프로그래밍 언어 등 상세 인적사항을 즉시 확인하실 수 있습니다.</p>
+                
+                <div class="guide-grid">
+                    <div class="guide-item">
+                        <h4><i class="fa-solid fa-magnifying-glass"></i> 실시간 이름 검색</h4>
+                        <p>이름을 입력하면 즉시 검색됩니다. 단일 결과는 상세 화면으로, 다수 결과는 부서별 목록으로 정렬되어 표시됩니다.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4><i class="fa-solid fa-user-shield"></i> 인사 관리자 모드</h4>
+                        <p>검색창에 관리자 비밀번호 <code>1234</code>를 입력하면 신규 등록, 정보 수정, 삭제 및 백업 관리가 가능합니다.</p>
+                    </div>
+                    <div class="guide-item">
+                        <h4><i class="fa-solid fa-floppy-disk"></i> 데이터 백업 및 보존</h4>
+                        <p>모든 데이터는 브라우저에 안전하게 저장되며, JSON 파일로 내보내기 및 덮어쓰기/합치기 불러오기를 지원합니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Detail Card View -->
+            <div id="detailCard" class="detail-card hidden">
+                <div class="detail-header">
+                    <div class="detail-header-title">
+                        <i class="fa-solid fa-user-tag"></i>
+                        <span id="detailTitleName">상세 프로필</span>
+                        <span id="autoSaveStatus" class="autosave-indicator">
+                            <i class="fa-solid fa-circle-check"></i> 자동 저장됨
+                        </span>
+                    </div>
+                    <div class="detail-actions">
+                        <span id="adminControls" class="hidden" style="display: flex; gap: 0.5rem;">
+                            <button id="editBtn" class="btn btn-outline btn-sm" onclick="enableEditMode()">
+                                <i class="fa-solid fa-pen-to-square"></i> 수정
+                            </button>
+                            <button id="saveCompleteBtn" class="btn btn-success btn-sm hidden" onclick="finishEditMode()">
+                                <i class="fa-solid fa-check"></i> 수정 완료
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCurrentPerson()">
+                                <i class="fa-solid fa-trash-can"></i> 삭제
+                            </button>
+                        </span>
+                        <button class="btn btn-secondary btn-sm" onclick="clearSearchAndReturn()">
+                            <i class="fa-solid fa-xmark"></i> 닫기
+                        </button>
+                    </div>
+                </div>
+                <div class="detail-body">
+                    <!-- Left: Photo & Basic Info -->
+                    <div class="detail-left">
+                        <div class="photo-container" id="photoContainer">
+                            <div id="photoDisplay" class="photo-placeholder">
+                                <i class="fa-solid fa-user-astronaut"></i><br>
+                                <span>사진 없음</span>
+                            </div>
+                            <div class="photo-controls">
+                                <label class="photo-upload-btn" for="photoFileInput">
+                                    <i class="fa-solid fa-camera"></i> 등록/변경
+                                </label>
+                                <button type="button" id="photoDeleteBtn" class="photo-delete-btn hidden" onclick="deletePhoto()">
+                                    <i class="fa-solid fa-trash"></i> 삭제
+                                </button>
+                            </div>
+                            <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                        </div>
+
+                        <table class="info-table">
+                            <tr>
+                                <th>성 명</th>
+                                <td id="cellName">--</td>
+                            </tr>
+                            <tr>
+                                <th>전화번호</th>
+                                <td id="cellPhone">--</td>
+                            </tr>
+                            <tr>
+                                <th>생년월일</th>
+                                <td id="cellBirth">--</td>
+                            </tr>
+                            <tr>
+                                <th>소 속</th>
+                                <td id="cellCompany">--</td>
+                            </tr>
+                            <tr>
+                                <th>부 서</th>
+                                <td id="cellDepartment">--</td>
+                            </tr>
+                            <tr>
+                                <th>직 책</th>
+                                <td id="cellPosition">--</td>
+                            </tr>
+                            <tr>
+                                <th>직 급</th>
+                                <td id="cellRank">--</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Right: Additional Details -->
+                    <div class="detail-right">
+                        <div class="field-group">
+                            <div class="field-label">
+                                <i class="fa-solid fa-briefcase"></i> 업무 이력
+                            </div>
+                            <div id="displayHistory" class="field-content"></div>
+                            <textarea id="inputHistory" class="field-input hidden" placeholder="업무 이력을 입력하세요..." oninput="autoSaveField('history', this.value)"></textarea>
+                        </div>
+
+                        <div class="field-group">
+                            <div class="field-label">
+                                <i class="fa-solid fa-face-smile"></i> 성격 및 특성
+                            </div>
+                            <div id="displayPersonality" class="field-content"></div>
+                            <textarea id="inputPersonality" class="field-input hidden" placeholder="성격 및 커뮤니케이션 스타일을 입력하세요..." oninput="autoSaveField('personality', this.value)"></textarea>
+                        </div>
+
+                        <div class="field-group">
+                            <div class="field-label">
+                                <i class="fa-solid fa-code"></i> 활용 가능 프로그래밍 언어 / 기술
+                            </div>
+                            <div id="displayLanguages" class="field-content"></div>
+                            <textarea id="inputLanguages" class="field-input hidden" placeholder="예: JavaScript, Python, React..." oninput="autoSaveField('languages', this.value)"></textarea>
+                        </div>
+
+                        <div class="field-group">
+                            <div class="field-label">
+                                <i class="fa-solid fa-note-sticky"></i> 기타 특이사항
+                            </div>
+                            <div id="displayNotes" class="field-content"></div>
+                            <textarea id="inputNotes" class="field-input hidden" placeholder="자격증, 외국어 능력, 라이선스 등 기타 참고사항..." oninput="autoSaveField('notes', this.value)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multiple Search Results List View -->
+            <div id="resultsCard" class="results-card hidden">
+                <div class="results-header">
+                    <div>검색 결과: <strong id="resultsCount">0</strong> 명 (소속 및 부서순 정렬)</div>
+                </div>
+                <div id="resultsGrid" class="results-grid"></div>
+            </div>
+
+            <!-- No Results View -->
+            <div id="noResultsCard" class="no-results hidden">
+                <i class="fa-solid fa-user-slash"></i>
+                <h3>검색 결과가 없습니다</h3>
+                <p>입력하신 성함과 일치하는 임직원 정보를 찾을 수 없습니다.</p>
+            </div>
+        </div>
+
+        <!-- Admin All People Table View -->
+        <div id="adminTableCard" class="admin-table-card hidden">
+            <div class="table-header">
+                <h3><i class="fa-solid fa-list-check"></i> 전체 임직원 명단 (관리자)</h3>
+                <span class="save-badge">총 <span id="adminTotalCount">0</span>명</span>
+            </div>
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>성명</th>
+                            <th>전화번호</th>
+                            <th>소속</th>
+                            <th>부서</th>
+                            <th>직책</th>
+                            <th>관리 Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Area -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JSON Import Mode Selection Modal -->
+    <div id="importModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title"><i class="fa-solid fa-file-import"></i> JSON 데이터 불러오기</div>
+            <div class="modal-body">
+                불러올 데이터의 가져오기 방식을 선택하세요.
+                <div class="modal-options" style="margin-top: 1rem;">
+                    <label class="radio-option">
+                        <input type="radio" name="importMode" value="replace" checked>
+                        <div>
+                            <strong>기존 데이터 전체 교체</strong>
+                            <div style="font-size: 0.8rem; color: #64748b;">현재 저장된 인물 데이터를 삭제하고 새 데이터로 교체합니다.</div>
+                        </div>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="importMode" value="merge">
+                        <div>
+                            <strong>기존 데이터와 합치기</strong>
+                            <div style="font-size: 0.8rem; color: #64748b;">기존 데이터에 새 인물을 추가합니다 (중복 대상 제외).</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary btn-sm" onclick="closeImportModal()">취소</button>
+                <button class="btn btn-primary btn-sm" onclick="confirmImportJSON()">확인 및 불러오기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Initial 50 Dummy People Data
+        const INITIAL_PEOPLE = [{"id": 1, "name": "최민준", "phone": "010-5506-5012", "birth": "820324", "company": "테크솔루션", "department": "인사팀", "position": "인사 관리", "rank": "사원", "photo": "", "history": "임직원 평가 및 보상 체계 개편 프로젝트", "personality": "체계적이고 리더십이 있음", "languages": "", "notes": ""}, {"id": 2, "name": "류서현", "phone": "010-1520-1488", "birth": "770408", "company": "테크솔루션", "department": "인사팀", "position": "채용 담당", "rank": "대리", "photo": "", "history": "2025년 상반기 공개채용 총괄", "personality": "체계적이고 리더십이 있음", "languages": "", "notes": ""}, {"id": 3, "name": "송서현", "phone": "010-4611-8359", "birth": "930526", "company": "테크솔루션", "department": "총무팀", "position": "시설 관리", "rank": "차장", "photo": "", "history": "사옥 이전 및 인테리어 공사 총괄", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": "영어 회통 가능"}, {"id": 4, "name": "장시우", "phone": "010-4527-6514", "birth": "780213", "company": "테크솔루션", "department": "총무팀", "position": "구매 담당", "rank": "사원", "photo": "", "history": "자산 관리 및 비품 구매 프로세스 개선", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 5, "name": "이지훈", "phone": "010-8527-9785", "birth": "780703", "company": "테크솔루션", "department": "회계팀", "position": "회계 관리", "rank": "대리", "photo": "", "history": "비용 절감 프로세스 도입", "personality": "수리적 감각이 뛰어나며 세심함", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 6, "name": "조우진", "phone": "010-2139-1750", "birth": "960425", "company": "테크솔루션", "department": "회계팀", "position": "세무 담당", "rank": "사원", "photo": "", "history": "결산 및 세무 신고 총괄", "personality": "꼼꼼하고 신중함", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 7, "name": "최지우", "phone": "010-5554-8428", "birth": "950606", "company": "테크솔루션", "department": "개발팀", "position": "시스템 아키텍처", "rank": "사원", "photo": "", "history": "클라우드 인프라 이전 마이그레이션 담당", "personality": "", "languages": "Java, Spring Boot, MySQL", "notes": "운전면허 1종 대형 보유"}, {"id": 8, "name": "박채원", "phone": "010-3803-9751", "birth": "980406", "company": "테크솔루션", "department": "개발팀", "position": "프론트엔드 개발", "rank": "대리", "photo": "", "history": "글로벌 서비스 API 서버 개발", "personality": "", "languages": "C++, Python, PyTorch", "notes": "운전면허 1종 대형 보유"}, {"id": 9, "name": "한정우", "phone": "010-1916-4752", "birth": "760613", "company": "테크솔루션", "department": "영업팀", "position": "B2B 영업", "rank": "사원", "photo": "", "history": "주요 B2B 고객사 20곳 신규 유치", "personality": "적극적인 커뮤니케이션", "languages": "", "notes": "운전면허 1종 대형 보유"}, {"id": 10, "name": "한지호", "phone": "010-9179-7482", "birth": "950805", "company": "테크솔루션", "department": "영업팀", "position": "글로벌 영업", "rank": "사원", "photo": "", "history": "주요 B2B 고객사 20곳 신규 유치", "personality": "적극적인 커뮤니케이션", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 11, "name": "송지후", "phone": "010-8019-7543", "birth": "860405", "company": "글로벌네트웍스", "department": "인사팀", "position": "교육 기획", "rank": "대리", "photo": "", "history": "2025년 상반기 공개채용 총괄", "personality": "경청을 잘하며 친화력이 높음", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 12, "name": "최시우", "phone": "010-3621-7916", "birth": "940213", "company": "글로벌네트웍스", "department": "인사팀", "position": "노무 관리", "rank": "사원", "photo": "", "history": "사내 직무 교육 프로그램 기획 및 운영", "personality": "체계적이고 리더십이 있음", "languages": "", "notes": "영어 회통 가능"}, {"id": 13, "name": "송승현", "phone": "010-1188-2876", "birth": "960925", "company": "글로벌네트웍스", "department": "총무팀", "position": "총무 관리", "rank": "사원", "photo": "", "history": "복리후생 제도 개편", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": ""}, {"id": 14, "name": "임서현", "phone": "010-3591-8433", "birth": "751224", "company": "글로벌네트웍스", "department": "총무팀", "position": "자산 관리", "rank": "사원", "photo": "", "history": "복리후생 제도 개편", "personality": "협동심이 강하고 묵묵히 일을 수행함", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 15, "name": "최승현", "phone": "010-5889-9317", "birth": "940405", "company": "글로벌네트웍스", "department": "회계팀", "position": "자금 운용", "rank": "사원", "photo": "", "history": "결산 및 세무 신고 총괄", "personality": "꼼꼼하고 신중함", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 16, "name": "한하윤", "phone": "010-1319-2832", "birth": "860508", "company": "글로벌네트웍스", "department": "회계팀", "position": "결산 담당", "rank": "사원", "photo": "", "history": "비용 절감 프로세스 도입", "personality": "꼼꼼하고 신중함", "languages": "", "notes": ""}, {"id": 17, "name": "황정우", "phone": "010-2133-9727", "birth": "990305", "company": "글로벌네트웍스", "department": "개발팀", "position": "시스템 아키텍처", "rank": "대리", "photo": "", "history": "글로벌 서비스 API 서버 개발", "personality": "", "languages": "Go, Docker, Kubernetes", "notes": "영어 회통 가능"}, {"id": 18, "name": "안승현", "phone": "010-7932-4470", "birth": "921223", "company": "글로벌네트웍스", "department": "개발팀", "position": "프론트엔드 개발", "rank": "사원", "photo": "", "history": "신규 모바일 앱 백엔드 아키텍처 설계", "personality": "", "languages": "C++, Python, PyTorch", "notes": "운전면허 1종 대형 보유"}, {"id": 19, "name": "오하은", "phone": "010-9479-8397", "birth": "780408", "company": "글로벌네트웍스", "department": "영업팀", "position": "고객 관리", "rank": "사원", "photo": "", "history": "주요 B2B 고객사 20곳 신규 유치", "personality": "적극적인 커뮤니케이션", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 20, "name": "윤윤서", "phone": "010-4608-1117", "birth": "771221", "company": "글로벌네트웍스", "department": "영업팀", "position": "영업 기획", "rank": "사원", "photo": "", "history": "주요 B2B 고객사 20곳 신규 유치", "personality": "외향적이고 설득력이 뛰어남", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 21, "name": "한도윤", "phone": "010-9423-4899", "birth": "831116", "company": "미래이노베이션", "department": "인사팀", "position": "인사 관리", "rank": "사원", "photo": "", "history": "2025년 상반기 공개채용 총괄", "personality": "체계적이고 리더십이 있음", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 22, "name": "류하윤", "phone": "010-4981-8749", "birth": "880404", "company": "미래이노베이션", "department": "인사팀", "position": "채용 담당", "rank": "사원", "photo": "", "history": "사내 직무 교육 프로그램 기획 및 운영", "personality": "원만하고 공감 능력이 뛰어남", "languages": "", "notes": "사내 동호회 회장"}, {"id": 23, "name": "신하은", "phone": "010-1887-2612", "birth": "760724", "company": "미래이노베이션", "department": "총무팀", "position": "시설 관리", "rank": "사원", "photo": "", "history": "사옥 이전 및 인테리어 공사 총괄", "personality": "협동심이 강하고 묵묵히 일을 수행함", "languages": "", "notes": ""}, {"id": 24, "name": "조지유", "phone": "010-8350-3296", "birth": "880309", "company": "미래이노베이션", "department": "총무팀", "position": "구매 담당", "rank": "대리", "photo": "", "history": "사옥 이전 및 인테리어 공사 총괄", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 25, "name": "송예준", "phone": "010-1828-9856", "birth": "750225", "company": "미래이노베이션", "department": "회계팀", "position": "회계 관리", "rank": "과장", "photo": "", "history": "결산 및 세무 신고 총괄", "personality": "수리적 감각이 뛰어나며 세심함", "languages": "", "notes": "사내 동호회 회장"}, {"id": 26, "name": "황지호", "phone": "010-7570-1960", "birth": "800701", "company": "미래이노베이션", "department": "회계팀", "position": "세무 담당", "rank": "임원", "photo": "", "history": "자금 운용 계획 및 감사 대응", "personality": "수리적 감각이 뛰어나며 세심함", "languages": "", "notes": "영어 회통 가능"}, {"id": 27, "name": "신우진", "phone": "010-8973-3536", "birth": "810507", "company": "미래이노베이션", "department": "개발팀", "position": "시스템 아키텍처", "rank": "부장", "photo": "", "history": "사내 ERP 시스템 고도화 프로젝트 참여", "personality": "", "languages": "Go, Docker, Kubernetes", "notes": "운전면허 1종 대형 보유"}, {"id": 28, "name": "한서준", "phone": "010-1821-8811", "birth": "910906", "company": "미래이노베이션", "department": "개발팀", "position": "프론트엔드 개발", "rank": "사원", "photo": "", "history": "사내 ERP 시스템 고도화 프로젝트 참여", "personality": "", "languages": "Go, Docker, Kubernetes", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 29, "name": "강도윤", "phone": "010-2113-4853", "birth": "870219", "company": "미래이노베이션", "department": "영업팀", "position": "B2B 영업", "rank": "사원", "photo": "", "history": "해외 파트너사 제휴 협상 전담", "personality": "외향적이고 설득력이 뛰어남", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 30, "name": "박서현", "phone": "010-9565-6183", "birth": "830422", "company": "미래이노베이션", "department": "영업팀", "position": "글로벌 영업", "rank": "과장", "photo": "", "history": "주요 B2B 고객사 20곳 신규 유치", "personality": "도전적이며 목표 지향적", "languages": "", "notes": "사내 동호회 회장"}, {"id": 31, "name": "정건우", "phone": "010-5915-8491", "birth": "850201", "company": "한성기업", "department": "인사팀", "position": "교육 기획", "rank": "대리", "photo": "", "history": "임직원 평가 및 보상 체계 개편 프로젝트", "personality": "경청을 잘하며 친화력이 높음", "languages": "", "notes": ""}, {"id": 32, "name": "송지호", "phone": "010-9288-5345", "birth": "790603", "company": "한성기업", "department": "인사팀", "position": "노무 관리", "rank": "차장", "photo": "", "history": "사내 직무 교육 프로그램 기획 및 운영", "personality": "원만하고 공감 능력이 뛰어남", "languages": "", "notes": ""}, {"id": 33, "name": "권정우", "phone": "010-9900-5956", "birth": "941117", "company": "한성기업", "department": "총무팀", "position": "총무 관리", "rank": "사원", "photo": "", "history": "복리후생 제도 개편", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": "운전면허 1종 대형 보유"}, {"id": 34, "name": "최승우", "phone": "010-3200-5333", "birth": "780224", "company": "한성기업", "department": "총무팀", "position": "자산 관리", "rank": "대리", "photo": "", "history": "자산 관리 및 비품 구매 프로세스 개선", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 35, "name": "조우진", "phone": "010-6617-4335", "birth": "961128", "company": "한성기업", "department": "회계팀", "position": "자금 운용", "rank": "사원", "photo": "", "history": "자금 운용 계획 및 감사 대응", "personality": "수리적 감각이 뛰어나며 세심함", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 36, "name": "이도윤", "phone": "010-7939-5533", "birth": "760111", "company": "한성기업", "department": "회계팀", "position": "결산 담당", "rank": "과장", "photo": "", "history": "비용 절감 프로세스 도입", "personality": "수리적 감각이 뛰어나며 세심함", "languages": "", "notes": ""}, {"id": 37, "name": "권지유", "phone": "010-8007-1158", "birth": "780223", "company": "한성기업", "department": "개발팀", "position": "시스템 아키텍처", "rank": "차장", "photo": "", "history": "사내 ERP 시스템 고도화 프로젝트 참여", "personality": "", "languages": "Go, Docker, Kubernetes", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 38, "name": "오윤서", "phone": "010-3426-8041", "birth": "790110", "company": "한성기업", "department": "개발팀", "position": "프론트엔드 개발", "rank": "사원", "photo": "", "history": "클라우드 인프라 이전 마이그레이션 담당", "personality": "", "languages": "JavaScript, Python, React", "notes": ""}, {"id": 39, "name": "윤건우", "phone": "010-2684-6794", "birth": "990928", "company": "한성기업", "department": "영업팀", "position": "고객 관리", "rank": "대리", "photo": "", "history": "해외 파트너사 제휴 협상 전담", "personality": "적극적인 커뮤니케이션", "languages": "", "notes": ""}, {"id": 40, "name": "윤승현", "phone": "010-3662-3900", "birth": "880106", "company": "한성기업", "department": "영업팀", "position": "영업 기획", "rank": "과장", "photo": "", "history": "연간 매출 목표 120% 달성", "personality": "도전적이며 목표 지향적", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 41, "name": "윤지후", "phone": "010-3608-2771", "birth": "870128", "company": "넥스트아이티", "department": "인사팀", "position": "인사 관리", "rank": "대리", "photo": "", "history": "2025년 상반기 공개채용 총괄", "personality": "원만하고 공감 능력이 뛰어남", "languages": "", "notes": "영어 회통 가능"}, {"id": 42, "name": "임정우", "phone": "010-4728-4652", "birth": "751107", "company": "넥스트아이티", "department": "인사팀", "position": "채용 담당", "rank": "사원", "photo": "", "history": "사내 직무 교육 프로그램 기획 및 운영", "personality": "경청을 잘하며 친화력이 높음", "languages": "", "notes": "스쿠버다이빙 자격증 보유"}, {"id": 43, "name": "장서윤", "phone": "010-9346-7548", "birth": "960911", "company": "넥스트아이티", "department": "총무팀", "position": "시설 관리", "rank": "부장", "photo": "", "history": "사옥 이전 및 인테리어 공사 총괄", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": ""}, {"id": 44, "name": "류지후", "phone": "010-1626-2776", "birth": "940712", "company": "넥스트아이티", "department": "총무팀", "position": "구매 담당", "rank": "과장", "photo": "", "history": "자산 관리 및 비품 구매 프로세스 개선", "personality": "친절하며 문제 해결 능력이 좋음", "languages": "", "notes": "정보처리기사 자격증 보유"}, {"id": 45, "name": "안예준", "phone": "010-7311-4114", "birth": "830123", "company": "넥스트아이티", "department": "회계팀", "position": "회계 관리", "rank": "대리", "photo": "", "history": "비용 절감 프로세스 도입", "personality": "꼼꼼하고 신중함", "languages": "", "notes": "영어 회통 가능"}, {"id": 46, "name": "신도윤", "phone": "010-6409-6143", "birth": "960224", "company": "넥스트아이티", "department": "회계팀", "position": "세무 담당", "rank": "차장", "photo": "", "history": "비용 절감 프로세스 도입", "personality": "수리적 감각이 뛰어나며 세심함", "languages": "", "notes": "운전면허 1종 대형 보유"}, {"id": 47, "name": "신서연", "phone": "010-7592-5844", "birth": "920307", "company": "넥스트아이티", "department": "개발팀", "position": "시스템 아키텍처", "rank": "대리", "photo": "", "history": "글로벌 서비스 API 서버 개발", "personality": "", "languages": "TypeScript, Vue.js, Node.js", "notes": "정보처리기사 자격증 보유"}, {"id": 48, "name": "류준서", "phone": "010-7653-9977", "birth": "750510", "company": "넥스트아이티", "department": "개발팀", "position": "프론트엔드 개발", "rank": "사원", "photo": "", "history": "클라우드 인프라 이전 마이그레이션 담당", "personality": "", "languages": "Go, Docker, Kubernetes", "notes": "사내 동호회 회장"}, {"id": 49, "name": "권하은", "phone": "010-4501-9375", "birth": "901206", "company": "넥스트아이티", "department": "영업팀", "position": "B2B 영업", "rank": "대리", "photo": "", "history": "연간 매출 목표 120% 달성", "personality": "적극적인 커뮤니케이션", "languages": "", "notes": "운전면허 1종 대형 보유"}, {"id": 50, "name": "홍서연", "phone": "010-2530-4848", "birth": "960508", "company": "넥스트아이티", "department": "영업팀", "position": "글로벌 영업", "rank": "과장", "photo": "", "history": "주요 B2B 고객사 20곳 신규 유치", "personality": "외향적이고 설득력이 뛰어남", "languages": "", "notes": ""}];
+
+        // State Management
+        let peopleData = [];
+        let isAdminMode = false;
+        let activePersonId = null;
+        let isEditing = false;
+        let pendingImportJSON = null;
+        let undoTimer = null;
+        let lastDeletedPerson = null;
+
+        // Company Order & Dept Order for sorting
+        const companyOrder = ["테크솔루션", "글로벌네트웍스", "미래이노베이션", "한성기업", "넥스트아이티"];
+        const deptOrder = ["인사팀", "총무팀", "회계팀", "개발팀", "영업팀"];
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStorageData();
+            setupEventListeners();
+            renderInitialView();
+        });
+
+        // Load LocalStorage or fallback to Initial Data
+        function loadStorageData() {
+            const saved = localStorage.getItem('company_directory_v5');
+            if (saved) {
+                try {
+                    peopleData = JSON.parse(saved);
+                } catch(e) {
+                    peopleData = [...INITIAL_PEOPLE];
+                    saveStorageData();
+                }
+            } else {
+                peopleData = [...INITIAL_PEOPLE];
+                saveStorageData();
+            }
+        }
+
+        function saveStorageData() {
+            localStorage.setItem('company_directory_v5', JSON.stringify(peopleData));
+            updateAdminTable();
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', handleSearchInput);
+        }
+
+        // Handle Search Input (Real-time search + Admin password 1234)
+        function handleSearchInput(e) {
+            const query = e.target.value.trim();
+
+            // Check Admin Password Trigger
+            if (query === '1234') {
+                enterAdminMode();
+                e.target.value = '';
+                return;
+            }
+
+            if (query === '') {
+                renderInitialView();
+                return;
+            }
+
+            // Real-time search by name
+            const matches = peopleData.filter(p => p.name.includes(query));
+            
+            // Sort matches by Company order, then Department order
+            matches.sort((a, b) => {
+                const compA = companyOrder.indexOf(a.company);
+                const compB = companyOrder.indexOf(b.company);
+                if (compA !== compB) return (compA === -1 ? 99 : compA) - (compB === -1 ? 99 : compB);
+                
+                const deptA = deptOrder.indexOf(a.department);
+                const deptB = deptOrder.indexOf(b.department);
+                return (deptA === -1 ? 99 : deptA) - (deptB === -1 ? 99 : deptB);
+            });
+
+            hideAllViews();
+
+            if (matches.length === 0) {
+                document.getElementById('noResultsCard').classList.remove('hidden');
+            } else if (matches.length === 1) {
+                showDetailView(matches[0].id);
+            } else {
+                showResultsList(matches);
+            }
+        }
+
+        function hideAllViews() {
+            document.getElementById('guideCard').classList.add('hidden');
+            document.getElementById('detailCard').classList.add('hidden');
+            document.getElementById('resultsCard').classList.add('hidden');
+            document.getElementById('noResultsCard').classList.add('hidden');
+        }
+
+        function renderInitialView() {
+            hideAllViews();
+            document.getElementById('guideCard').classList.remove('hidden');
+            activePersonId = null;
+            isEditing = false;
+        }
+
+        // Admin Mode Toggle
+        function enterAdminMode() {
+            isAdminMode = true;
+            document.getElementById('modeBadge').className = 'mode-badge admin';
+            document.getElementById('modeBadge').innerHTML = '<i class="fa-solid fa-user-shield"></i> 인사 관리자 모드';
+            document.getElementById('adminToolbar').classList.add('active');
+            document.getElementById('adminControls').classList.remove('hidden');
+            document.getElementById('adminTableCard').classList.remove('hidden');
+            updateAdminTable();
+            showToast('관리자 모드로 전환되었습니다.');
+        }
+
+        function exitAdminMode() {
+            isAdminMode = false;
+            isEditing = false;
+            document.getElementById('modeBadge').className = 'mode-badge viewer';
+            document.getElementById('modeBadge').innerHTML = '<i class="fa-solid fa-eye"></i> 일반 조회 모드';
+            document.getElementById('adminToolbar').classList.remove('active');
+            document.getElementById('adminControls').classList.add('hidden');
+            document.getElementById('adminTableCard').classList.add('hidden');
+            
+            if (activePersonId) {
+                showDetailView(activePersonId);
+            }
+            showToast('일반 조회 모드로 돌아왔습니다.');
+        }
+
+        // Display Results List (Multiple matches)
+        function showResultsList(matches) {
+            const resultsCard = document.getElementById('resultsCard');
+            const resultsGrid = document.getElementById('resultsGrid');
+            const resultsCount = document.getElementById('resultsCount');
+
+            resultsCount.textContent = matches.length;
+            resultsGrid.innerHTML = '';
+
+            matches.forEach(person => {
+                const card = document.createElement('div');
+                card.className = 'person-item-card';
+                card.onclick = () => showDetailView(person.id);
+
+                const photoHtml = person.photo 
+                    ? `<img src="${person.photo}" alt="${person.name}">`
+                    : `<i class="fa-solid fa-user"></i>`;
+
+                card.innerHTML = `
+                    <div class="person-avatar">${photoHtml}</div>
+                    <div class="person-info-summary">
+                        <div class="person-name-title">
+                            <span class="name">${person.name}</span>
+                            <span class="pos">${person.position} / ${person.rank}</span>
+                        </div>
+                        <div class="person-org">${person.company} · ${person.department}</div>
+                        <div class="person-contact"><i class="fa-solid fa-phone"></i> ${person.phone}</div>
+                    </div>
+                `;
+                resultsGrid.appendChild(card);
+            });
+
+            resultsCard.classList.remove('hidden');
+        }
+
+        // Display Single Person Detail
+        function showDetailView(id) {
+            const person = peopleData.find(p => p.id === id);
+            if (!person) return;
+
+            activePersonId = id;
+            isEditing = false;
+            hideAllViews();
+
+            document.getElementById('detailCard').classList.remove('hidden');
+
+            // Header Title
+            document.getElementById('detailTitleName').textContent = `${person.name} (${person.company} ${person.department})`;
+
+            // Photo
+            const photoContainer = document.getElementById('photoContainer');
+            const photoDisplay = document.getElementById('photoDisplay');
+            photoContainer.classList.remove('editable');
+
+            updatePhotoDisplay(person);
+
+            // Left Basic Info Cells
+            renderBasicInfoCells(person, false);
+
+            // Right Detail Fields
+            renderRightFields(person, false);
+
+            // Edit controls toggle based on admin mode
+            if (isAdminMode) {
+                document.getElementById('adminControls').classList.remove('hidden');
+                document.getElementById('editBtn').classList.remove('hidden');
+                document.getElementById('saveCompleteBtn').classList.add('hidden');
+            } else {
+                document.getElementById('adminControls').classList.add('hidden');
+            }
+        }
+
+        // Helper to render basic info cells (Read-only vs Editable)
+        function renderBasicInfoCells(person, editable) {
+            if (!editable) {
+                document.getElementById('cellName').textContent = person.name || '--';
+                document.getElementById('cellPhone').textContent = person.phone || '--';
+                document.getElementById('cellBirth').textContent = person.birth || '--';
+                document.getElementById('cellCompany').textContent = person.company || '--';
+                document.getElementById('cellDepartment').textContent = person.department || '--';
+                document.getElementById('cellPosition').textContent = person.position || '--';
+                document.getElementById('cellRank').textContent = person.rank || '--';
+            } else {
+                document.getElementById('cellName').innerHTML = `<input type="text" value="${person.name}" oninput="autoSaveField('name', this.value)">`;
+                document.getElementById('cellPhone').innerHTML = `<input type="text" value="${person.phone}" oninput="autoSaveField('phone', this.value)">`;
+                document.getElementById('cellBirth').innerHTML = `<input type="text" value="${person.birth}" oninput="autoSaveField('birth', this.value)">`;
+                
+                // Company Dropdown
+                let compOptions = companyOrder.map(c => `<option value="${c}" ${person.company === c ? 'selected' : ''}>${c}</option>`).join('');
+                document.getElementById('cellCompany').innerHTML = `<select onchange="autoSaveField('company', this.value)">${compOptions}</select>`;
+
+                // Department Dropdown
+                let deptOptions = deptOrder.map(d => `<option value="${d}" ${person.department === d ? 'selected' : ''}>${d}</option>`).join('');
+                document.getElementById('cellDepartment').innerHTML = `<select onchange="autoSaveField('department', this.value)">${deptOptions}</select>`;
+
+                document.getElementById('cellPosition').innerHTML = `<input type="text" value="${person.position}" oninput="autoSaveField('position', this.value)">`;
+                
+                // Rank Dropdown
+                const ranks = ["사원", "대리", "과장", "차장", "부장", "임원"];
+                let rankOptions = ranks.map(r => `<option value="${r}" ${person.rank === r ? 'selected' : ''}>${r}</option>`).join('');
+                document.getElementById('cellRank').innerHTML = `<select onchange="autoSaveField('rank', this.value)">${rankOptions}</select>`;
+            }
+        }
+
+        // Helper to render right fields (Read-only vs Editable)
+        function renderRightFields(person, editable) {
+            const fields = ['history', 'personality', 'languages', 'notes'];
+            
+            fields.forEach(f => {
+                const displayEl = document.getElementById(`display${f.charAt(0).toUpperCase() + f.slice(1)}`);
+                const inputEl = document.getElementById(`input${f.charAt(0).toUpperCase() + f.slice(1)}`);
+
+                if (!editable) {
+                    displayEl.classList.remove('hidden');
+                    inputEl.classList.add('hidden');
+                    if (person[f] && person[f].trim() !== '') {
+                        displayEl.textContent = person[f];
+                        displayEl.classList.remove('empty');
+                    } else {
+                        displayEl.textContent = '입력된 내용이 없습니다.';
+                        displayEl.classList.add('empty');
+                    }
+                } else {
+                    displayEl.classList.add('hidden');
+                    inputEl.classList.remove('hidden');
+                    inputEl.value = person[f] || '';
+                }
+            });
+        }
+
+        // Enable Edit Mode (Admin)
+        function enableEditMode() {
+            if (!isAdminMode || !activePersonId) return;
+
+            isEditing = true;
+            const person = peopleData.find(p => p.id === activePersonId);
+            if (!person) return;
+
+            document.getElementById('editBtn').classList.add('hidden');
+            document.getElementById('saveCompleteBtn').classList.remove('hidden');
+
+            document.getElementById('photoContainer').classList.add('editable');
+            renderBasicInfoCells(person, true);
+            renderRightFields(person, true);
+        }
+
+        // Finish Edit Mode
+        function finishEditMode() {
+            isEditing = false;
+            document.getElementById('editBtn').classList.remove('hidden');
+            document.getElementById('saveCompleteBtn').classList.add('hidden');
+
+            if (activePersonId) {
+                showDetailView(activePersonId);
+            }
+            showToast('수정이 완료되었습니다.');
+        }
+
+        // Real-time Auto Save Field
+        function autoSaveField(fieldKey, value) {
+            if (!activePersonId) return;
+            const person = peopleData.find(p => p.id === activePersonId);
+            if (!person) return;
+
+            // Check Duplicate (Name + Phone) if name or phone changed
+            if (fieldKey === 'name' || fieldKey === 'phone') {
+                const targetName = fieldKey === 'name' ? value.trim() : person.name;
+                const targetPhone = fieldKey === 'phone' ? value.trim() : person.phone;
+
+                const duplicate = peopleData.find(p => p.id !== activePersonId && p.name === targetName && p.phone === targetPhone);
+                if (duplicate) {
+                    showToast('⚠️ 이름과 전화번호가 동일한 인물이 이미 존재합니다.', 3000);
+                }
+            }
+
+            person[fieldKey] = value;
+            saveStorageData();
+
+            // Trigger subtle auto-save status indicator
+            const indicator = document.getElementById('autoSaveStatus');
+            indicator.classList.add('visible');
+            setTimeout(() => {
+                indicator.classList.remove('visible');
+            }, 1200);
+        }
+
+        // Photo Display Helper
+        function updatePhotoDisplay(person) {
+            const photoDisplay = document.getElementById('photoDisplay');
+            const photoDeleteBtn = document.getElementById('photoDeleteBtn');
+
+            if (person && person.photo) {
+                photoDisplay.innerHTML = `<img src="${person.photo}" alt="${person.name}">`;
+                if (photoDeleteBtn) photoDeleteBtn.classList.remove('hidden');
+            } else {
+                photoDisplay.innerHTML = `<i class="fa-solid fa-user-astronaut"></i><br><span>사진 없음</span>`;
+                if (photoDeleteBtn) photoDeleteBtn.classList.add('hidden');
+            }
+        }
+
+        // Photo Upload Handler
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !activePersonId) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const base64Image = evt.target.result;
+                const person = peopleData.find(p => p.id === activePersonId);
+                if (person) {
+                    person.photo = base64Image;
+                    saveStorageData();
+                    updatePhotoDisplay(person);
+                    showToast('사진이 업로드 및 저장되었습니다.');
+                }
+            };
+            reader.readAsDataURL(file);
+            e.target.value = ''; // Reset file input
+        }
+
+        // Photo Delete Handler
+        function deletePhoto() {
+            if (!activePersonId) return;
+            const person = peopleData.find(p => p.id === activePersonId);
+            if (person) {
+                person.photo = "";
+                saveStorageData();
+                updatePhotoDisplay(person);
+                showToast('사진이 삭제되고 초기 상태로 변경되었습니다.');
+            }
+        }
+
+        // Create New Person Form
+        function openNewPersonForm() {
+            if (!isAdminMode) return;
+
+            const newId = Date.now();
+            const newPerson = {
+                id: newId,
+                name: "신규 임직원",
+                phone: "010-0000-0000",
+                birth: "950101",
+                company: "테크솔루션",
+                department: "개발팀",
+                position: "",
+                rank: "사원",
+                photo: "",
+                history: "",
+                personality: "",
+                languages: "",
+                notes: ""
+            };
+
+            peopleData.unshift(newPerson);
+            saveStorageData();
+            showDetailView(newId);
+            enableEditMode();
+            showToast('새 인물이 생성되었습니다. 정보를 입력하세요.');
+        }
+
+        // Delete Person with 10-Second Undo
+        function deleteCurrentPerson() {
+            if (!isAdminMode || !activePersonId) return;
+
+            const person = peopleData.find(p => p.id === activePersonId);
+            if (!person) return;
+
+            if (!confirm(`'${person.name}' 님을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            // Save for undo
+            lastDeletedPerson = { ...person };
+            peopleData = peopleData.filter(p => p.id !== activePersonId);
+            saveStorageData();
+
+            renderInitialView();
+            showUndoToast(`${person.name} 님이 삭제되었습니다.`);
+        }
+
+        function deletePersonById(id) {
+            if (!isAdminMode) return;
+
+            const person = peopleData.find(p => p.id === id);
+            if (!person) return;
+
+            if (!confirm(`'${person.name}' 님을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            lastDeletedPerson = { ...person };
+            peopleData = peopleData.filter(p => p.id !== id);
+            saveStorageData();
+
+            if (activePersonId === id) {
+                renderInitialView();
+            }
+            showUndoToast(`${person.name} 님이 삭제되었습니다.`);
+        }
+
+        // Undo Delete logic
+        function undoDelete() {
+            if (!lastDeletedPerson) return;
+
+            peopleData.unshift(lastDeletedPerson);
+            saveStorageData();
+            showDetailView(lastDeletedPerson.id);
+            
+            showToast(`${lastDeletedPerson.name} 님의 삭제가 취소되었습니다.`);
+            lastDeletedPerson = null;
+
+            if (undoTimer) {
+                clearTimeout(undoTimer);
+                undoTimer = null;
+            }
+        }
+
+        function showUndoToast(msg) {
+            if (undoTimer) clearTimeout(undoTimer);
+
+            const container = document.getElementById('toastContainer');
+            container.innerHTML = ''; // Clear existing toasts
+
+            const toast = document.createElement('div');
+            toast.className = 'toast undo-toast';
+            toast.innerHTML = `
+                <span>${msg}</span>
+                <button class="btn-undo" onclick="undoDelete()">되돌리기 (10초)</button>
+            `;
+            container.appendChild(toast);
+
+            undoTimer = setTimeout(() => {
+                toast.remove();
+                lastDeletedPerson = null;
+            }, 10000);
+        }
+
+        // Clear Search & Return to Initial State
+        function clearSearchAndReturn() {
+            document.getElementById('searchInput').value = '';
+            renderInitialView();
+        }
+
+        // Admin Table Management
+        function updateAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            const totalCount = document.getElementById('adminTotalCount');
+            
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            totalCount.textContent = peopleData.length;
+
+            peopleData.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.phone}</td>
+                    <td>${p.company}</td>
+                    <td>${p.department} (${p.rank})</td>
+                    <td>${p.position}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-outline btn-sm" onclick="showDetailView(${p.id})">보기/수정</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePersonById(${p.id})">삭제</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Export JSON Data
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(peopleData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `company_directory_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('JSON 데이터가 내보내졌습니다.');
+        }
+
+        // Trigger Import JSON File Input
+        function triggerImportJSON() {
+            document.getElementById('jsonFileInput').click();
+        }
+
+        function handleJSONFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (Array.isArray(imported)) {
+                        pendingImportJSON = imported;
+                        document.getElementById('importModal').classList.add('active');
+                    } else {
+                        alert('올바른 JSON 배열 형식이 아닙니다.');
+                    }
+                } catch(err) {
+                    alert('JSON 파일을 읽는 중 오류가 발생했습니다.');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // Reset input
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+            pendingImportJSON = null;
+        }
+
+        function confirmImportJSON() {
+            if (!pendingImportJSON) return;
+
+            const selectedMode = document.querySelector('input[name="importMode"]:checked').value;
+
+            if (selectedMode === 'replace') {
+                peopleData = pendingImportJSON;
+                showToast('기존 데이터를 성공적으로 전체 교체하였습니다.');
+            } else {
+                // Merge Mode with Duplicate Prevention (Same Name & Same Phone)
+                let addedCount = 0;
+                pendingImportJSON.forEach(newItem => {
+                    const isDup = peopleData.some(p => p.name === newItem.name && p.phone === newItem.phone);
+                    if (!isDup) {
+                        // Ensure unique ID
+                        newItem.id = Date.now() + Math.floor(Math.random() * 10000);
+                        peopleData.push(newItem);
+                        addedCount++;
+                    }
+                });
+                showToast(`데이터를 합쳤습니다. (${addedCount}명 신규 추가됨)`);
+            }
+
+            saveStorageData();
+            closeImportModal();
+            renderInitialView();
+        }
+
+        // Toast Helper Notification
+        function showToast(message, duration = 2500) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #4ade80;"></i> ${message}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+    </script>
+</body>
+</html>
